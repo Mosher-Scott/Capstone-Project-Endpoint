@@ -2,7 +2,8 @@
   "name": "api-endpoints",
   "version": "0.0.0",
   "engines": {
-    "node": "14.x"
+    "node": "12.x",
+    "npm":"6.x"
   },
   "scripts": {
     "ng": "ng",
