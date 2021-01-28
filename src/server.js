@@ -63,63 +63,76 @@ function handleGetAllClientData(request, response) {
 
   var userId = request.params.userId;
 
-  // If the userId wasn't sent, then get all client data
-  if(userId == null) {
+  // Run the method to pull data from the database
+  getClientDataFromDb(userId, function(error, result) {
 
-    // Run the method to pull data from the database
-    getAllClientDataFromDb(function(error, result) {
+    if (error || result == "undefined") {
+      console.log("Either an error or result was undefined");
+      response.statusCode = 404;
+      response.json({success:false, data:error});
+    }
 
-      if (error || result == "undefined") {
-        console.log("Either an error or result was undefined");
-        response.statusCode = 404;
-        response.json({success:false, data:error});
-      }
+    // If query ran successfully but there was no results
+    if (result == null) {
+      console.log("No results returned");
+      response.statusCode = 204;
+      response.end();
+    } 
 
-      // If query ran successfully but there was no results
-      if (result == null) {
-        console.log("No results returned");
-        response.statusCode = 204;
-        response.end();
-      } 
+    else {
+      console.log("Clients found");
 
-      else {
-        console.log("Clients found");
+      const clients = result;
 
-        const clients = result;
-
-        response.status(200);
-
-        response.setHeader('Content-Type', 'application/json');
-        response.json(clients);
-      }
-
-
-    }) // End of  if statement
-
-  } else {
-      // TODO: Update this to actually pull single client data
       response.status(200);
+
       response.setHeader('Content-Type', 'application/json');
-      response.send("You picked userID " + userId);
-  }
+      response.json(clients);
+    }
+
+
+  }) // end of getClientDataFromDb method
 
 }
 
-function getAllClientDataFromDb(callback){
+function getClientDataFromDb(id, callback){
 
+  console.log("id is " + id);
   console.log("Now getting all clients from the database")
 
-  const sql = "SELECT * FROM client ORDER BY id ASC";
+  var sql;
+  if (id == null) {
+    sql = "SELECT c.id AS client_id, json_build_object('firstName', c.firstName, 'lastName', c.lastName, 'client_active_flag', c.active, 'client_contact', json_build_object( 'address', ci.streetAddress, 'city', ci.city, 'state', ci.state, 'zipcode', ci.zipcode,'phone', ci.phone, 'email', ci.email, 'registration_date', ci.registrationDate),'assigned_training_sessions', json_agg(json_build_object ('session_id', ts.id, 'session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active))) client_details FROM client AS c JOIN client_Info AS ci ON ci.clientid = c.id INNER JOIN client_training_session AS cts ON cts.clientid = c.id INNER JOIN training_session AS ts ON ts.id = cts.sessionid GROUP BY c.id, ci.streetaddress, ci.city, ci.state, ci.zipcode, ci.phone, ci.email, ci.registrationDate ORDER BY c.id ASC;";
 
-  pool.query(sql, function(err, result) {
+    pool.query(sql, function(err, result) {
     
-    if(err) {
-    console.log("an error occurred")
-    console.log(err)
-    callback(err, null);
-    } else {
-      callback(null, result.rows);
-    }
+      if(err) {
+      console.log("an error occurred")
+      console.log(err)
+      callback(err, null);
+      } else {
+        callback(null, result.rows);
+      }
+    
+    }) // end of pool
+  } else {
+    sql = "SELECT c.id AS client_id, json_build_object('firstName', c.firstName, 'lastName', c.lastName, 'client_active_flag', c.active, 'client_contact', json_build_object( 'address', ci.streetAddress, 'city', ci.city, 'state', ci.state, 'zipcode', ci.zipcode,'phone', ci.phone, 'email', ci.email, 'registration_date', ci.registrationDate),'assigned_training_sessions', json_agg(json_build_object ('session_id', ts.id, 'session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active))) client_details FROM client AS c JOIN client_Info AS ci ON ci.clientid = c.id INNER JOIN client_training_session AS cts ON cts.clientid = c.id INNER JOIN training_session AS ts ON ts.id = cts.sessionid WHERE c.id = $1::int GROUP BY c.id, ci.streetaddress, ci.city, ci.state, ci.zipcode, ci.phone, ci.email, ci.registrationDate;";
+
+    const params = [id];
+
+    pool.query(sql, params, function(err, result) {
+    
+      if(err) {
+      console.log("an error occurred")
+      console.log(err)
+      callback(err, null);
+      } else {
+        callback(null, result.rows);
+      }
+    
+    }) // end of pool
+  }
   
-  }) // end of pool
+
+  
 }
