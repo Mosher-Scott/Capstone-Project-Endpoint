@@ -3,45 +3,115 @@ var bodyParser = require("body-parser");
 const path = require('path')
 const PORT = process.env.PORT || 5000
 
-// Need this to connect to the DB
-const connectionString = process.env.DATABASE_URL || "postgres://erlpzgduapjutd:8e441a6e94c2303b22cba3f9e49299b4512d7ad674471a1bfa9774a026e23e44@localhost:5432/d89mifq9oa741m?ssl=true"
-
 const { Pool } = require('pg')
-// const pool = new Pool();
 
-const pool = new Pool({connectionString: connectionString});
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  //ssl:true
+});
 
-var app = express()
-  app.use(express.static(path.join(__dirname, 'public')))
+var app = express();
 
-  // Need this to handle post data
-  app.use(bodyParser.urlencoded({ extended: false }))
-  app.use(bodyParser.json())
+app.use(express.static(path.join(__dirname, 'public')))
 
-  app.get("/clients", function(req, res) {
+// Need this to handle post data
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
-    console.log(req.body);
+app.get("/clientstest", function(req, res) {
 
-    // Test data
-    var data = {"user1":{"name":"mahesh","password":"password1","profession":"teacher","id":1},
-    "user3":{"name":"ramesh","password":"password3","profession":"clerk","id":3}}
+  console.log(req.body);
 
-    res.status(200);
-    res.setHeader('Content-Type', 'application/json');
+  // Test data
+  var data = {"user1":{"name":"mahesh","password":"password1","profession":"teacher","id":1},
+  "user3":{"name":"ramesh","password":"password3","profession":"clerk","id":3}}
 
-    console.log("Returning Response");
+  res.status(200);
+  res.setHeader('Content-Type', 'application/json');
 
-    // For testing
-    res.json(data);
-  });
+  console.log("Returning Response");
 
-  var server = app.listen(process.env.PORT || 8080, function () {
-    var port = server.address().port;
-    console.log("App now running on port", port);
-  });
+  // For testing
+  res.json(data);
+});
 
-  // Generic error handler
-  function handleError(res, reason, message, code) {
-    console.log("ERROR: " + reason);
-    res.status(code || 500).json({"error": message});
+app.get("/clients/:userId?", handleGetAllClientData);
+
+var server = app.listen(process.env.PORT || 8080, function () {
+  var port = server.address().port;
+  console.log("App now running on port", port);
+});
+
+// Generic error handler
+function handleError(res, reason, message, code) {
+  console.log("ERROR: " + reason);
+  res.status(code || 500).json({"error": message});
+}
+
+function handleGetAllClientData(request, response) {
+  console.log("Now getting all client info");
+
+  var userId = request.params.userId;
+
+  console.log(process.env.DATABASE_URL);
+
+  // If the userId wasn't sent, then get all client data
+  if(userId == null) {
+
+    // Run the method to pull data from the database
+    getAllClientDataFromDb(function(error, result) {
+
+      if (error || result == "undefined") {
+        console.log("Either an error or result was undefined");
+        response.statusCode = 404;
+        response.json({success:false, data:error});
+      }
+
+      // If query ran successfully but there was no results
+      if (result == null) {
+        console.log("No results returned");
+        response.statusCode = 204;
+        response.end();
+      } 
+
+      else {
+        console.log("Clients found");
+
+        const clients = result;
+
+        response.status(200);
+
+        response.setHeader('Content-Type', 'application/json');
+        response.json(clients);
+      }
+
+
+    }) // End of  if statement
+
+  } else {
+      // TODO: Update this to actually pull single client data
+      response.status(200);
+      response.setHeader('Content-Type', 'application/json');
+      response.send("You picked userID " + userId);
   }
+
+}
+
+function getAllClientDataFromDb(callback){
+
+  console.log("Now getting all clients from the database")
+
+  const sql = "SELECT * FROM client ORDER BY id ASC";
+
+  pool.query(sql, function(err, result) {
+    
+    if(err) {
+    console.log("an error occurred")
+    console.log(err)
+    callback(err, null);
+    } else {
+      callback(null, result.rows);
+    }
+  
+  }) // end of pool
+}
