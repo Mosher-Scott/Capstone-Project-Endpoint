@@ -15,10 +15,9 @@ const { Pool } = require('pg')
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  //connectionString: 'postgres://owdpowalxmfxhe:25d15bd6006e63522470b51d724432bf91df5e546ab4d30ecb797a11eb939a4d@ec2-54-86-57-171.compute-1.amazonaws.com:5432/dckfqbfl49vhu2',
   ssl: true,
   sslmode: require,
-reject_unauthorized: true
+  reject_unauthorized: true
 });
 
 var app = express();
