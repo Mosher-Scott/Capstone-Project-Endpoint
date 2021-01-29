@@ -5,7 +5,7 @@ var bodyParser = require("body-parser");
 
 
 const path = require('path')
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 64147
 
 // Routes
 const routes = require('./routes/clients');
@@ -20,8 +20,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 app.use('/clients', routes)
-
-
 
 // This must be last.  It is the catch all for wrong endpoints
 app.get("*", handleError);

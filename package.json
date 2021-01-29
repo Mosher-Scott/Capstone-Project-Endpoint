@@ -1,0 +1,25 @@
+{
+  "name": "capstone-project-endpoint",
+  "version": "1.0.0",
+  "description": "api endpoints for capstone project",
+  "main": "server.js",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "pg": "^8.5.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mosher-Scott/Capstone-Project-Endpoint.git"
+  },
+  "author": "Scott Mosher",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mosher-Scott/Capstone-Project-Endpoint/issues"
+  },
+  "homepage": "https://github.com/Mosher-Scott/Capstone-Project-Endpoint#readme"
+}

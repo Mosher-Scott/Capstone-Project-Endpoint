@@ -1,8 +1,5 @@
-// For routing client requests
 var express = require('express');
 var app = express.Router();
-
-const methods = require('./clientFunctions');
 
 const { Pool } = require('pg');
 const { get } = require('http');
@@ -14,75 +11,19 @@ const pool = new Pool({
   reject_unauthorized: true
 });
 
-app.get("/test", methods.test);
+module.exports.test = function(request, response) {
+  console.log("you made it to here");
+  console.log(request);
 
-//#region Clients endpoints
-// Get all users, or if userId is supplied get individual client
-app.get("/:userId?", methods.handleGetAllClientData);
+  response.status(200);
+  response.setHeader('Content-Type', 'application/json');
+  response.send("Hi there");
+}
 
-// Delete a user
-app.delete("/clients/:userId", handleDeleteClient);
-
-// Add a new user
-app.post("/clients", handleAddNewClient);
-
-// Not used
-app.put("/clients", function(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.status(404).json({error: 'Not allowed'});
-});
-
-// Update a user
-app.patch("/clients", handleAddNewClient);
-
-
-// Get training sessions assigned to a specific user
-app.get("/clients/:userId/trainingsessions", handleGetClientTrainingSessions);
-
-// Not used
-app.put("/clients/:userId/trainingsessions", function(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.status(404).json({error: 'Not allowed'});
-});
-
-// Not used
-app.post("/clients/:userId/trainingsessions", function(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.status(404).json({error: 'Not allowed'});
-});
-
-// Not used
-app.patch("/clients/:userId/trainingsessions", function(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.status(404).json({error: 'Not allowed'});
-});
-
-// Not used
-app.delete("/clients/:userId/trainingsessions", function(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.status(404).json({error: 'Not allowed'});
-});
-
-
-// Add a new training session to a user
-app.post("/clients/:userId/trainingsessions/:trainingSessionId", handleAddClientTrainingSessions);
-
-// Get workout history for a specific clientId
-app.get("/clients/:userId/workouts", handleGetClientWorkouts);
-
-// Get a specific workout for a given clientId
-app.get("/clients/:userId/workouts/:workoutId", handleGetSpecificClientWorkout);
-
-//#endregion
-
-
-module.exports = app;
-
-  /************** GET Endpoint Handling Methods ****************/
-//#region GET Endpoint Handling
 // Default function for getting client data from the database.  Can be copied/pasted for the other endpoints
-function handleGetAllClientData(request, response) {
+module.exports.handleGetAllClientData = function(request, response) {
   console.log("Now getting all client info");
+  console.log("reached the other file");
 
   var userId = request.params.userId;
 
@@ -121,48 +62,8 @@ function handleGetAllClientData(request, response) {
   }) // end of getClientDataFromDb method
 } // End of handling client data method
 
-// Post a new client to the database
-function handleAddNewClient(request, response) {
 
-}
 
-// Get all training sessions assigned to the client
-function handleGetClientTrainingSessions(request, response) {
-  console.log("Attempting to get training sessions")
-
-  response.status(200);
-  response.setHeader('Content-Type', 'application/json');
-  response.send("Hi there");
-}
-
-// Gets all workouts a client has done
-function handleGetClientWorkouts(request, response) {
-
-}
-
-// Get a specific workout by a specific client
-function handleGetSpecificClientWorkout(request, response) {
-
-}
-//#endregion
-
-/************** POST Endpoint Handling Methods ****************/
-//#region POST Endpoint Handling
-function handleAddClientTrainingSessions(request, response){
-
-}
-
-//#endregion
-
-/************** DELETE Endpoint Handling Methods ****************/
-//#region Delete Endpoint Handling
-function handleDeleteClient(request, response) {
-
-}
-//#endregion
-
-/************** Database Query Methods ****************/
-//#region Database Methods
 // Method for returning all client data, or just single client info
 function getClientDataFromDb(id, callback){
 
@@ -207,4 +108,3 @@ function getClientDataFromDb(id, callback){
   }
 } // end of getClientDataFromDb
 
-//#endregion
