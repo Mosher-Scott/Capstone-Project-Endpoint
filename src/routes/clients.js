@@ -4,9 +4,12 @@ var app = express.Router();
 
 const methods = require('./clientFunctions');
 
-//#region Active endpoints
+//#region Active Endpoints
 // Get all users, or if userId is supplied get individual client
 app.get("/:userId?", methods.handleGetAllClientData);
+
+// Get client first & last name only
+app.get("/basics/names", methods.handleGetAllClientNamesAndIds);
 
 // TODO: This 
 // Add a new user 
@@ -25,7 +28,7 @@ app.post("/:userId/trainingsessions/:trainingSessionId", methods.handleAddClient
 
 // TODO: This
 // remove a training session from a user
-//app.patch("/:userId/trainingsessions/:trainingSessionId", methods.handleRemoveTrainingSessionFromUser);
+app.patch("/:userId/trainingsessions/:trainingSessionId", methods.handleRemoveTrainingSessionFromUser);
 
 // Get workout history for a specific clientId
 app.get("/:userId/workouthistory", methods.handleGetClientWorkouts);

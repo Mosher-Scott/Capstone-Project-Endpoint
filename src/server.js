@@ -8,7 +8,8 @@ const path = require('path')
 const PORT = process.env.PORT || 64147
 
 // Routes
-const routes = require('./routes/clients');
+const clientRoutes = require('./routes/clients');
+const trainingSessionRoutes = require('./routes/trainingsessions');
 
 var app = express();
 
@@ -19,7 +20,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-app.use('/clients', routes)
+app.use('/clients', clientRoutes)
+app.use('/trainingsessions', trainingSessionRoutes)
 
 // This must be last.  It is the catch all for wrong endpoints
 app.get("/*", function(request, response) {

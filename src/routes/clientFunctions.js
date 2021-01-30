@@ -4,7 +4,7 @@ var express = require('express');
 var app = express.Router();
 
 const { Pool } = require('pg');
-const { get } = require('http');
+const { get, request } = require('http');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -19,9 +19,10 @@ const pool = new Pool({
 // Default function for getting client data from the database.  Can be copied/pasted for the other endpoints
 module.exports.handleGetAllClientData = function(request, response) {
   console.log("Now getting all client info");
-  console.log("reached the other file");
 
   var userId = request.params.userId;
+
+  var basics = request.params.basics;
 
   // Run the method to pull data from the database
   getClientDataFromDb(userId, function(error, result) {
@@ -59,11 +60,47 @@ module.exports.handleGetAllClientData = function(request, response) {
   }) // end of getClientDataFromDb method
 } // End of handling client data method
 
+// Handles getting the client id, first & last names from the database
+module.exports.handleGetAllClientNamesAndIds = function(request, response) {
+
+  getClientBasicsFromDb(function(error, result) {
+
+    console.log("Result: " + result);
+    if (error || result == "undefined") {
+      console.log("Either an error or result was undefined");
+      response.statusCode = 404;
+      response.json({success:false, data:error});
+    }
+
+    else if (result === null ) {
+      console.log ("null result");
+      response.statusCode = 404;
+      response.json({success:false, data:"Nothing"});
+    }
+
+    // If query ran successfully but there was no results
+    else if (result.length == 0) {
+      console.log("No results returned");
+      response.statusCode = 204;
+      response.end();
+    } 
+
+    else {
+      console.log("Clients found");
+
+      const clients = result;
+
+      response.status(200);
+
+      response.setHeader('Content-Type', 'application/json');
+      response.json(clients);
+    }
+  }) // end of getClientDataFromDb method
+}
+
 // Get all training sessions assigned to the client
 module.exports.handleGetClientTrainingSessions = function(request, response) {
   console.log("Attempting to get training sessions")
-
-  var userId = request.params.userId;
 
   // Run the method to pull data from the database
   getClientTrainingSessionsFromDb(userId, function(error, result) {
@@ -201,6 +238,10 @@ module.exports.handleAddClientWorkout = function(request, response) {
 module.exports.handleModifySpecificClientWorkout = function(request, response) {
   
 }
+
+module.exports.handleRemoveTrainingSessionFromUser = function(request, response) {
+
+}
 //#endregion
 
 /************** Database Query Methods ****************/
@@ -314,4 +355,27 @@ function getSpecificClientWorkoutHistoryFromDb(id, callback) {
   
   }) // end of pool
 }
+
+function getClientBasicsFromDb(callback){
+
+  console.log("Now client ids, first, and last names")
+  
+  var sql = "SELECT c.id AS client_id, json_agg(json_build_object('first_name', c.firstname, 'last_name', c.lastname)) client_info FROM client AS c GROUP BY c.id ORDER BY c.id ASC;";
+
+
+  pool.query(sql, function(err, result) {
+  
+    if(err) {
+    console.log("an error occurred")
+    console.log(err)
+    callback(err, null);
+    } else {
+      callback(null, result.rows);
+    }
+  
+  }) // end of pool
+} // end of getClientDataFromDb
+
+
+
 //#endregion
