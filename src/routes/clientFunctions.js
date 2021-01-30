@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 var express = require('express');
 var app = express.Router();
 
@@ -30,6 +32,7 @@ module.exports.handleGetAllClientData = function(request, response) {
   // Run the method to pull data from the database
   getClientDataFromDb(userId, function(error, result) {
 
+    console.log(result);
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
@@ -42,8 +45,9 @@ module.exports.handleGetAllClientData = function(request, response) {
       response.json({success:false, data:"Nothing"});
     }
 
+   
     // If query ran successfully but there was no results
-    else if (result !== null || result.length == 0) {
+    else if (result.length == 0) {
       console.log("No results returned");
       response.statusCode = 204;
       response.end();
