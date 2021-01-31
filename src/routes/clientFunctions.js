@@ -13,7 +13,6 @@ const pool = new Pool({
   reject_unauthorized: true
 });
 
-
 /************** GET Endpoint Handling Methods ****************/
 //#region GET Endpoint Handling
 // Default function for getting client data from the database.  Can be copied/pasted for the other endpoints
@@ -27,7 +26,7 @@ module.exports.handleGetAllClientData = function(request, response) {
   // Run the method to pull data from the database
   getClientDataFromDb(userId, function(error, result) {
 
-    console.log(result);
+    //console.log(result);
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;

@@ -24,7 +24,7 @@ module.exports.handleGetTrainingSessiondata = function(request, response) {
   // Run the method to pull data from the database
   getClientDataFromDb(sessionId, function(error, result) {
 
-    console.log(result);
+   // console.log(result);
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
@@ -66,7 +66,7 @@ module.exports.handleGetTrainingSessionExercises = function(request, response) {
   // Run the method to pull data from the database
   getTrainingSessionExercisesFromDb(sessionId, function(error, result) {
 
-    console.log(result);
+    //console.log(result);
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
@@ -105,7 +105,7 @@ module.exports.handleGetTrainingSessionNamesAndIds = function(request, response)
   // Run the method to pull data from the database
   getTrainingSessionExerciseNamesAndIdsFromDb(function(error, result) {
 
-    console.log(result);
+    //console.log(result);
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
@@ -205,7 +205,7 @@ function getTrainingSessionExercisesFromDb(id, callback) {
 }
 
 function getTrainingSessionExerciseNamesAndIdsFromDb(callback) {
-    console.log("Now getting training session names and ids")
+  console.log("Now getting training session names and ids")
   
   var sql = "SELECT ts.id AS training_session_id, json_agg(json_build_object('training_session_name', ts.sessionname)) session_info FROM training_session AS ts GROUP BY ts.id ORDER BY ts.id ASC;";
 

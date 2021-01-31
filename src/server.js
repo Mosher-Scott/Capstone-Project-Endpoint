@@ -19,6 +19,8 @@ const PORT = process.env.PORT || 64147
 // Routes
 const clientRoutes = require('./routes/clients');
 const trainingSessionRoutes = require('./routes/trainingsessions');
+const exerciseRoutes = require('./routes/exercises');
+const muscleGroupRoutes = require('./routes/muscleGroups');
 
 var app = express();
 
@@ -48,10 +50,11 @@ const checkAuthentication = jwt({
   algorithms: ['RS256']
 });
 
-
 // Add checkAuthentication for any endpoint you want users to be authorized to access
 app.use('/clients', checkAuthentication, clientRoutes)
 app.use('/trainingsessions', checkAuthentication, trainingSessionRoutes)
+app.use('/exercises', checkAuthentication, exerciseRoutes)
+app.use('/musclegroups', checkAuthentication, muscleGroupRoutes)
 
 // Homepage, doesn't need to be authenticated
 app.get("/*", function(request, response) {
