@@ -8,7 +8,8 @@ const path = require('path')
 const PORT = process.env.PORT || 64147
 
 // Routes
-const routes = require('./routes/clients');
+const clientRoutes = require('./routes/clients');
+const trainingSessionRoutes = require('./routes/trainingsessions');
 
 var app = express();
 
@@ -19,19 +20,19 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-app.use('/clients', routes)
+app.use('/clients', clientRoutes)
+app.use('/trainingsessions', trainingSessionRoutes)
 
 // This must be last.  It is the catch all for wrong endpoints
-app.get("*", handleError);
+app.get("/*", function(request, response) {
+  console.log("Reached homepage");
+  response.sendFile(__dirname + "/public/sitedetails.html")
+  //response.status(200).json({"error": "Placeholder for main page, that will contain data"});
+});
 
 var server = app.listen(process.env.PORT, function () {
   var port = server.address().port;
   console.log("App now running on port", port);
 });
 
-// Generic error handler
-function handleError(res, reason, message, code) {
-  console.log("ERROR: " + reason);
-  res.status(code || 500).json({"error": message});
-}
 
