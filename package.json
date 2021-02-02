@@ -1,0 +1,19 @@
+{
+  "name": "capstone-endpoints",
+  "version": "1.0.0",
+  "description": "My API endpoints",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.heroku.com/frozen-meadow-69055.git"
+  },
+  "keywords": [
+    "senior",
+    "project"
+  ],
+  "author": "Scott Mosher",
+  "license": "ISC"
+}
