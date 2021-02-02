@@ -21,8 +21,6 @@ module.exports.handleGetAllClientData = function(request, response) {
 
   var userId = request.params.userId;
 
-  var basics = request.params.basics;
-
   // Run the method to pull data from the database
   getClientDataFromDb(userId, function(error, result) {
 
@@ -43,18 +41,19 @@ module.exports.handleGetAllClientData = function(request, response) {
     else if (result.length == 0) {
       console.log("No results returned");
       response.statusCode = 204;
-      response.end();
+      response.json({success:false, data:"Nothing"});
     } 
 
     else {
       console.log("Clients found");
 
       const clients = result;
+      //console.log(clients);
 
       response.status(200);
 
       response.setHeader('Content-Type', 'application/json');
-      response.json(clients);
+      response.send(clients);
     }
   }) // end of getClientDataFromDb method
 } // End of handling client data method
