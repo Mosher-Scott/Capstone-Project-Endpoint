@@ -8,9 +8,9 @@ const { get, request } = require('http');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: true,
-  sslmode: require,
-  reject_unauthorized: false
+  ssl: {
+    reject_unauthorized: false
+  }
 });
 
 /************** GET Endpoint Handling Methods ****************/
