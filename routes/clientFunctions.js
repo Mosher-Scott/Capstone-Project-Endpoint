@@ -10,7 +10,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: true,
   sslmode: require,
-  reject_unauthorized: true
+  reject_unauthorized: false
 });
 
 /************** GET Endpoint Handling Methods ****************/
