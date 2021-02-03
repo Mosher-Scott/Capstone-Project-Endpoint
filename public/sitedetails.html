@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Exercise Tracking API Endpoints</title>
+    <meta name="description" content="Home">
+    <meta name="author" content="Scott Mosher">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
+    <script src="scripts/functions.js"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Fitness Tracker API</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1 class="text-center">Fitness Tracker API Documentation</h1>
+
+    <div class="row">
+      <div class="col-lg-6 right-border">
+        <p>This API contains endpoints that are used to connect to our database.</p>
+        <p>The following GET endpoints are available:</p>
+        <ul>
+            <li>/clients/</li>
+            <li>/clients/${id}</li>
+            <li>/clients/${id}/trainingsessions</li>
+            <li>/clients/${id}/workouthistory</li>
+            <li>/clients/basics/names</li>
+        </ul>
+
+        <p>POST endpoints</p>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class='text-center'>
+    <p>Copyright 2021 Scott Mosher</p>
+  </footer>
+</body>
+</html>
