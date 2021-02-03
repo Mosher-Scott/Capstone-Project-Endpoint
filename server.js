@@ -61,7 +61,7 @@ app.use('/', express.static(path.join(__dirname, 'testheroku')));
 
 // Handling the actual requests
 // Add checkAuthentication for any endpoint you want users to be authorized to access
-app.use('/clients', checkAuthentication, clientRoutes)
+app.use('/clients', clientRoutes)
 
 // Default
 app.get("/*", function(request, response) {
