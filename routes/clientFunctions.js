@@ -9,7 +9,7 @@ const { get, request } = require('http');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    reject_unauthorized: false
+    rejectUnauthorized: false
   }
 });
 
