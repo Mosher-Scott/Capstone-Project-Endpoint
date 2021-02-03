@@ -1,5 +1,9 @@
+'use strict';
+
 require('dotenv').config();
 
+const path = require('path')
+const http = require('http');
 var express = require("express");
 var bodyParser = require("body-parser");
 
@@ -13,7 +17,7 @@ const jwt = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
 
 
-const path = require('path')
+
 const PORT = process.env.PORT || 64147
 
 // Routes
