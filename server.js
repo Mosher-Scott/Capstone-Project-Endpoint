@@ -41,13 +41,31 @@ const muscleGroupRoutes = require('./routes/muscleGroups');
 // Set paths
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Check authentication tokens
+const checkAuthentication = jwt({
+    secret: jwksRsa.expressJwtSecret({
+      cache: true,
+      rateLimit: true,
+      jwksRequestsPerMinute: 5,
+      jwksUri: 'https://dev-w4x3pv3a.us.auth0.com/.well-known/jwks.json'
+    }),
+    audience: 'https://capstone-api-auth',
+    issuer: 'https://dev-w4x3pv3a.us.auth0.com/',
+    algorithms: ['RS256']
+  });
+
 
 
 app.use('/', express.static(path.join(__dirname, 'testheroku')));
 
-app.get('/', function(request, response) {
+
+// Handling the actual requests
+
+// Default
+app.get("/*", function(request, response) {
+    console.log("Reached homepage");
     response.sendFile(__dirname + "/public/sitedetails.html")
-})
+  });
 
 server.listen(port, () => {
   console.log(`Listening on http://localhost:${port}/`);
