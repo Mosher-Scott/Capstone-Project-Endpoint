@@ -53,7 +53,12 @@ module.exports.handleGetAllClientData = function(request, response) {
       response.status(200);
 
       response.setHeader('Content-Type', 'application/json');
-      response.send(clients);
+
+      // Orig
+      //response.send(clients);
+
+      // Modified query test
+      response.json(clients);
     }
   }) // end of getClientDataFromDb method
 } // End of handling client data method
@@ -253,7 +258,11 @@ function getClientDataFromDb(id, callback){
 
   // Check the user id.  If it is null, then return all user information
   if (id == null) {
-    sql = "SELECT c.id AS client_id, json_build_object('firstName', c.firstName, 'lastName', c.lastName, 'client_active_flag', c.active, 'client_contact', json_build_object( 'address', ci.streetAddress, 'city', ci.city, 'state', ci.state, 'zipcode', ci.zipcode,'phone', ci.phone, 'email', ci.email, 'registration_date', ci.registrationDate),'assigned_training_sessions', json_agg(json_build_object ('session_id', ts.id, 'session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active))) client_details FROM client AS c JOIN client_Info AS ci ON ci.clientid = c.id LEFT JOIN client_training_session AS cts ON cts.clientid = c.id LEFT JOIN training_session AS ts ON ts.id = cts.sessionid GROUP BY c.id, ci.streetaddress, ci.city, ci.state, ci.zipcode, ci.phone, ci.email, ci.registrationDate ORDER BY c.id ASC;";
+    // Orig
+    //sql = "SELECT c.id AS client_id, json_build_object('firstName', c.firstName, 'lastName', c.lastName, 'client_active_flag', c.active, 'client_contact', json_build_object( 'address', ci.streetAddress, 'city', ci.city, 'state', ci.state, 'zipcode', ci.zipcode,'phone', ci.phone, 'email', ci.email, 'registration_date', ci.registrationDate),'assigned_training_sessions', json_agg(json_build_object ('session_id', ts.id, 'session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active))) client_details FROM client AS c JOIN client_Info AS ci ON ci.clientid = c.id LEFT JOIN client_training_session AS cts ON cts.clientid = c.id LEFT JOIN training_session AS ts ON ts.id = cts.sessionid GROUP BY c.id, ci.streetaddress, ci.city, ci.state, ci.zipcode, ci.phone, ci.email, ci.registrationDate ORDER BY c.id ASC;";
+
+    // Testing result
+    sql = "SELECT c.id AS client_id, c.firstName, c.lastName, c.active, ci.streetAddress, ci.city, ci.state, ci.zipcode, ci.phone, ci.email, ci.registrationDate ts.id, ts.sessionname, ts.sessiondescription, ts.sessionSets, ts.sessionreps,ts.active FROM client AS c JOIN client_Info AS ci ON ci.clientid = c.id LEFT JOIN client_training_session AS cts ON cts.clientid = c.id LEFT JOIN training_session AS ts ON ts.id = cts.sessionid GROUP BY c.id, ci.streetaddress, ci.city, ci.state, ci.zipcode, ci.phone, ci.email, ci.registrationDate ORDER BY c.id ASC;";
 
     pool.query(sql, function(err, result) {
     
