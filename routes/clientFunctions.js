@@ -28,36 +28,29 @@ module.exports.handleGetAllClientData = function(request, response) {
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
-      response.json({success:false, data:error});
+      response.json({success:true, data:error});
     }
 
     else if (result === null ) {
       console.log ("null result");
       response.statusCode = 404;
-      response.json({success:false, data:"Nothing"});
+      response.json({success:true, data:"No results returned"});
     }
 
     // If query ran successfully but there was no results
     else if (result.length == 0) {
       console.log("No results returned");
       response.statusCode = 204;
-      response.json({success:false, data:"Nothing"});
+      response.json({success:true, data:"No results returned"});
     } 
 
     else {
       console.log("Clients found");
 
       const clients = result;
-      //console.log(clients);
 
       response.status(200);
-
       response.setHeader('Content-Type', 'application/json');
-
-      // Orig
-      //response.send(clients);
-
-      // Modified query test
       response.json(clients);
     }
   }) // end of getClientDataFromDb method
@@ -72,19 +65,20 @@ module.exports.handleGetAllClientNamesAndIds = function(request, response) {
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
-      response.json({success:false, data:error});
+      response.json({success:true, data:error});
     }
 
     else if (result === null ) {
       console.log ("null result");
       response.statusCode = 404;
-      response.json({success:false, data:"Nothing"});
+      response.json({success:true, data:"No results returned"});
     }
 
     // If query ran successfully but there was no results
     else if (result.length == 0) {
-      console.log("No results returned");
+      console.log("No results No results returned");
       response.statusCode = 204;
+      response.json({success:true, data:"No results returned"});
       response.end();
     } 
 
@@ -375,7 +369,7 @@ function getClientBasicsFromDb(callback){
 
   console.log("Now client ids, first, and last names")
   
-  var sql = "SELECT c.id AS client_id, json_agg(json_build_object('first_name', c.firstname, 'last_name', c.lastname)) client_info FROM client AS c GROUP BY c.id ORDER BY c.id ASC;";
+  var sql = "SELECT c.id AS client_id, c.firstname, c.lastname FROM client AS c ORDER BY c.id ASC;";
 
 
   pool.query(sql, function(err, result) {
