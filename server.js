@@ -61,10 +61,16 @@ app.use('/', express.static(path.join(__dirname, 'testheroku')));
 
 // Handling the actual requests
 // Add checkAuthentication for any endpoint you want users to be authorized to access
-app.use('/clients', checkAuthentication, clientRoutes)
-app.use('/trainingsessions', checkAuthentication, trainingSessionRoutes)
-app.use('/exercises', checkAuthentication, exerciseRoutes)
-app.use('/musclegroups', checkAuthentication, muscleGroupRoutes)
+// app.use('/clients', checkAuthentication, clientRoutes)
+// app.use('/trainingsessions', checkAuthentication, trainingSessionRoutes)
+// app.use('/exercises', checkAuthentication, exerciseRoutes)
+// app.use('/musclegroups', checkAuthentication, muscleGroupRoutes)
+
+// Not using authentication because I'm lazuy during testing
+app.use('/clients', clientRoutes)
+app.use('/trainingsessions', trainingSessionRoutes)
+app.use('/exercises', exerciseRoutes)
+app.use('/musclegroups', muscleGroupRoutes)
 
 
 // Default
