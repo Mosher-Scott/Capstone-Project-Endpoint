@@ -73,6 +73,7 @@ app.use('/exercises', exerciseRoutes)
 app.use('/musclegroups', muscleGroupRoutes)
 
 
+
 // Default
 app.get("/*", function(request, response) {
     console.log("Reached homepage");

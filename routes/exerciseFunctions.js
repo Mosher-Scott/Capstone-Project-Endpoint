@@ -19,50 +19,41 @@ module.exports.handleGetExercisesData = function (request, response) {
     console.log("Now getting all exercises");
 
     var exerciseId = request.params.exerciseId;
-    var isInt = Number.isInteger(exerciseId);
+    console.log(exerciseId);
 
-    if (!isInt) {
-        console.log("Non int entered");
-        response.statusCode = 404;
-        response.json({success:false, data:"Something other than an integer was entered as a parameter"});
-    } else {
-        var basics = request.params.basics;
+  // Run the method to pull data from the database
+  getExerciseDataFromDb(exerciseId, function(error, result) {
 
-        // Run the method to pull data from the database
-        getExerciseDataFromDb(exerciseId, function(error, result) {
+      //console.log(result);
+      if (error || result == "undefined") {
+      console.log("Either an error or result was undefined");
+      response.statusCode = 404;
+      response.json({success:error, data:"Either an error or result was undefined"});
+      }
 
-            //console.log(result);
-            if (error || result == "undefined") {
-            console.log("Either an error or result was undefined");
-            response.statusCode = 404;
-            response.json({success:false, data:error});
-            }
+      else if (result === null ) {
+      console.log ("null result");
+      response.statusCode = 404;
+      response.json({success:true, data:"Nothing was returned"});
+      }
 
-            else if (result === null ) {
-            console.log ("null result");
-            response.statusCode = 404;
-            response.json({success:false, data:"Nothing"});
-            }
+      // If query ran successfully but there was no results
+      else if (result.length == 0) {
+      console.log("No results returned");
+      response.statusCode = 204;
+      response.json({success:false, data:"No results found"});
+      } 
 
-            // If query ran successfully but there was no results
-            else if (result.length == 0) {
-            console.log("No results returned");
-            response.statusCode = 204;
-            response.json({success:false, data:"No results found"});
-            } 
+      else {
+      console.log("Exercises found");
 
-            else {
-            console.log("Exercises found");
+      const exercises = result;
 
-            const exercises = result;
-
-            response.status(200);
-
-            response.setHeader('Content-Type', 'application/json');
-            response.json(exercises);
-            }
-        }) // end of getClientDataFromDb method
-    }
+      response.status(200);
+      response.setHeader('Content-Type', 'application/json');
+      response.json(exercises);
+      }
+  }) // end of getClientDataFromDb method
 }
 
 module.exports.handleGetExercisesNamesAndIds = function(request, response) {
@@ -75,20 +66,20 @@ module.exports.handleGetExercisesNamesAndIds = function(request, response) {
         if (error || result == "undefined") {
         console.log("Either an error or result was undefined");
         response.statusCode = 404;
-        response.json({success:false, data:error});
+        response.json({success:false, data:"Either an error or result was undefined"});
         }
 
         else if (result === null ) {
         console.log ("null result");
         response.statusCode = 404;
-        response.json({success:false, data:"Nothing"});
+        response.json({success:true, data:"No data found"});
         }
 
         // If query ran successfully but there was no results
         else if (result.length == 0) {
         console.log("No results returned");
         response.statusCode = 204;
-        response.json({success:false, data:"No results found"});
+        response.json({success:true, data:"No results found"});
         } 
 
         else {
@@ -117,7 +108,7 @@ function getExerciseDataFromDb(id, callback){
   
     // Check the exercise id.  If it is null, then return all user information
     if (id == null) {
-      sql = "SELECT e.id AS exercise_id, json_build_object('exercise_name', e.name, 'muscle_group', mg.name, 'exercise_instruction', e.instruction, 'exercise_active_flag', e.active) exercise_info FROM exercises AS e JOIN muscle_group AS mg ON mg.id = e.musclegroup GROUP BY e.id, mg.name ORDER BY e.id ASC;";
+      sql = "SELECT e.id AS exercise_id, e.name, mg.name AS muscle_group, e.instruction, e.active FROM exercises AS e JOIN muscle_group AS mg ON mg.id = e.musclegroup ORDER BY e.id ASC;";
   
       pool.query(sql, function(err, result) {
       
@@ -134,7 +125,7 @@ function getExerciseDataFromDb(id, callback){
     
     // If there is a userid, search for it
     else {
-      sql = "SELECT e.id AS exercise_id, json_build_object('exercise_name', e.name, 'muscle_group', mg.name, 'exercise_instruction', e.instruction, 'exercise_active_flag', e.active) exercise_info FROM exercises AS e JOIN muscle_group AS mg ON mg.id = e.musclegroup WHERE e.id = $1::int GROUP BY e.id, mg.name;";
+      sql = "SELECT e.id AS exercise_id, e.name, mg.name AS muscle_group, e.instruction, e.active FROM exercises AS e JOIN muscle_group AS mg ON mg.id = e.musclegroup WHERE e.id = $1::int GROUP BY e.id, mg.name;";
   
       const params = [id];
   

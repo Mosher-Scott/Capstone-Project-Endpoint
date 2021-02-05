@@ -5,6 +5,7 @@ var app = express.Router();
 
 const { Pool } = require('pg');
 const { get, request } = require('http');
+const { Console } = require('console');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -16,9 +17,8 @@ const pool = new Pool({
 /************** GET Endpoint Handling Methods ****************/
 //#region GET Endpoint Handling
 module.exports.handleGetMuscleGroupData = function (request, response) {
-    var muscleGroupId = request.params.id;
-
-    console.log(request.params);
+    
+  var muscleGroupId = request.params.muscleGroupId;
 
   // Run the method to pull data from the database
   getDataFromDb(muscleGroupId, function(error, result) {
@@ -27,31 +27,31 @@ module.exports.handleGetMuscleGroupData = function (request, response) {
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
-      response.json({success:false, data:error});
+      response.json({success:false, data:"Either an error or result was undefined"});
     }
 
     else if (result === null ) {
       console.log ("null result");
       response.statusCode = 404;
-      response.json({success:false, data:"Nothing"});
+      response.json({success:false, data:"Nothing found"});
     }
 
     // If query ran successfully but there was no results
     else if (result.length == 0) {
       console.log("No results returned");
       response.statusCode = 204;
+      response.json({success:false, data:"Nothing found"});
       response.end();
     } 
 
     else {
-      console.log("Training Sessions found");
+      console.log("Muscle Group found");
 
-      const sessions = result;
+      const muscleGroup = result;
 
       response.status(200);
-
       response.setHeader('Content-Type', 'application/json');
-      response.json(sessions);
+      response.json(muscleGroup);
     }
   }) // end of DataFromDb method
 }
@@ -63,13 +63,12 @@ module.exports.handleGetMuscleGroupData = function (request, response) {
 function getDataFromDb(id, callback) {
     console.log("Now getting muscle groups from the database")
 
-    console.log(id);
     var sql;
 
-    // Check the user id.  If it is null, then return all user information
+    // Check the muscle group id.  If it is null, then return all user information
     if (id == null) {
 
-        sql = "SELECT json_build_object('muscle_group_id', mg.id, 'muscle_group_name', mg.name) muscle_group_details FROM muscle_group AS mg GROUP BY mg.id ORDER BY mg.id ASC;";
+        sql = "SELECT mg.id, mg.name muscle_group_details FROM muscle_group AS mg GROUP BY mg.id ORDER BY mg.id ASC;";
                 
         pool.query(sql, function(err, result) {
             
@@ -85,7 +84,7 @@ function getDataFromDb(id, callback) {
     }
 
     else {
-        sql = "SELECT ts.id AS session_id, json_build_object('session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active, 'exercises', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_instructions', e.instruction))) session_details FROM training_session AS ts JOIN session_exercises AS se ON se.sessionid = ts.id JOIN exercises AS e on e.id = se.exerciseid WHERE ts.id = $1::int GROUP BY ts.id ORDER BY ts.id ASC;";
+        sql = "SELECT mg.id, mg.name FROM muscle_group AS mg WHERE mg.id = $1::int;";
 
         const params = [id];
 

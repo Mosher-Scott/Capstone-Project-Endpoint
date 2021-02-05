@@ -28,7 +28,7 @@ module.exports.handleGetAllClientData = function(request, response) {
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
-      response.json({success:true, data:error});
+      response.json({success:true, data:"No results found"});
     }
 
     else if (result === null ) {
@@ -88,7 +88,6 @@ module.exports.handleGetAllClientNamesAndIds = function(request, response) {
       const clients = result;
 
       response.status(200);
-
       response.setHeader('Content-Type', 'application/json');
       response.json(clients);
     }
@@ -99,13 +98,15 @@ module.exports.handleGetAllClientNamesAndIds = function(request, response) {
 module.exports.handleGetClientTrainingSessions = function(request, response) {
   console.log("Attempting to get training sessions")
 
+  var userId = request.params.userId;
+
   // Run the method to pull data from the database
   getClientTrainingSessionsFromDb(userId, function(error, result) {
  
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
-      response.json({success:false, data:error});
+      response.json({success:true, data:"Either an error happened, or the result was undefined"});
     }
 
     // If query ran successfully but there was no results
@@ -115,7 +116,7 @@ module.exports.handleGetClientTrainingSessions = function(request, response) {
 
       var message = "No training sessions found for client " + userId;
       response.setHeader('Content-Type', 'application/json');
-      response.json({success:false, data: message});
+      response.json({success:true, data:"No training sessions found for client"});
       //response.end();
     } 
 
@@ -125,7 +126,6 @@ module.exports.handleGetClientTrainingSessions = function(request, response) {
       const clients = result;
 
       response.status(200);
-
       response.setHeader('Content-Type', 'application/json');
       response.json(clients);
     }
@@ -144,7 +144,7 @@ module.exports.handleGetClientWorkouts = function(request, response) {
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
-      response.json({success:false, data:error});
+      response.json({success:true, data:"No workout history found for client"});
     }
 
     // If query ran successfully but there was no results
@@ -154,7 +154,7 @@ module.exports.handleGetClientWorkouts = function(request, response) {
 
       var message = "No workout history found for client " + userId;
       response.setHeader('Content-Type', 'application/json');
-      response.json({success:false, data: message});
+      response.json({success:true, data:"No workout history found for client"});
       //response.end();
     } 
 
@@ -180,19 +180,18 @@ module.exports.handleGetSpecificClientWorkout = function(request, response) {
   getSpecificClientWorkoutHistoryFromDb(workoutId, function(error, result) {
  
     if (error || result == "undefined") {
-      console.log("Either an error or result was undefined");
+      console.log("No workout with that id found");
       response.statusCode = 404;
-      response.json({success:false, data:error});
+      response.json({success:true, data:"No workout history found for client"});
     }
 
     // If query ran successfully but there was no results
     else if (result.length == 0) {
-      console.log("No results returned");
+      console.log("No workout history found id " + workoutId);
       response.statusCode = 404;
 
-      var message = "No workout history found id " + workoutId;
       response.setHeader('Content-Type', 'application/json');
-      response.json({success:false, data: message});
+      response.json({success:true, data:"No workout history found for client"});
       //response.end();
     } 
 
@@ -304,7 +303,10 @@ function getClientTrainingSessionsFromDb(id, callback){
 
   console.log("Now getting training sessions assigned to client " + id + " from the database")
   
-  var sql = "SELECT ts.id AS session_id, json_build_object('session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active, 'exercises', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_muscle_group', mg.name, 'exercise_instruction', e.instruction, 'exercise_active_flag', e.active))) session_details FROM client AS c JOIN client_training_session AS cts ON cts.clientid = c.id JOIN training_session AS ts ON ts.id = cts.sessionid JOIN session_exercises AS se ON se.sessionid = ts.id JOIN exercises AS e on e.id = se.exerciseid JOIN muscle_group AS mg ON mg.id = e.musclegroup WHERE c.id = $1::int GROUP BY ts.id;";
+  // Original
+  // var sql = "SELECT ts.id AS session_id, json_build_object('session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active, 'exercises', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_muscle_group', mg.name, 'exercise_instruction', e.instruction, 'exercise_active_flag', e.active))) session_details FROM client AS c JOIN client_training_session AS cts ON cts.clientid = c.id JOIN training_session AS ts ON ts.id = cts.sessionid JOIN session_exercises AS se ON se.sessionid = ts.id JOIN exercises AS e on e.id = se.exerciseid JOIN muscle_group AS mg ON mg.id = e.musclegroup WHERE c.id = $1::int GROUP BY ts.id;";
+
+  var sql = "SELECT ts.id, ts.sessionname, ts.sessiondescription,  ts.sessionSets, ts.sessionreps, ts.active, json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_muscle_group', mg.name, 'exercise_instruction', e.instruction, 'exercise_active_flag', e.active))session_details FROM client AS c JOIN client_training_session AS cts ON cts.clientid = c.id JOIN training_session AS ts ON ts.id = cts.sessionid JOIN session_exercises AS se ON se.sessionid = ts.id JOIN exercises AS e on e.id = se.exerciseid JOIN muscle_group AS mg ON mg.id = e.musclegroup WHERE c.id = $1::int GROUP BY ts.id;"
 
   const params = [id];
 
@@ -326,7 +328,10 @@ function getClientWorkoutHistoryFromDb(id, callback) {
 
   console.log("Now getting workout sessions done by client " + id + " from the database")
   
-  var sql = "SELECT cwh.id AS client_workout_history_session_id, json_build_object('session_id', ts.id, 'session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'exercises_performed', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_sets', cwhe.sets, 'exercise_reps', cwhe.reps, 'exercise_weight', cwhe.weight, 'exercise_seconds', cwhe.seconds))) workout_details FROM client_workout_history AS cwh JOIN client_workout_history_exercises AS cwhe ON cwhe.workouthistoryid = cwh.id JOIN exercises AS e ON e.id = cwhe.exerciseid JOIN training_session AS ts ON ts.id = cwh.sessionid JOIN client AS c ON c.id = cwh.clientid WHERE c.id = $1::int GROUP BY cwh.id, ts.id;";
+  // Original
+  // var sql = "SELECT cwh.id AS client_workout_history_session_id, json_build_object('session_id', ts.id, 'session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'exercises_performed', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_sets', cwhe.sets, 'exercise_reps', cwhe.reps, 'exercise_weight', cwhe.weight, 'exercise_seconds', cwhe.seconds))) workout_details FROM client_workout_history AS cwh JOIN client_workout_history_exercises AS cwhe ON cwhe.workouthistoryid = cwh.id JOIN exercises AS e ON e.id = cwhe.exerciseid JOIN training_session AS ts ON ts.id = cwh.sessionid JOIN client AS c ON c.id = cwh.clientid WHERE c.id = $1::int GROUP BY cwh.id, ts.id;";
+
+  var sql = "SELECT cwh.id, cwh.sessiondate, ts.id, ts.sessionname, ts.sessiondescription, json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_sets', cwhe.sets, 'exercise_reps', cwhe.reps, 'exercise_weight', cwhe.weight, 'exercise_seconds', cwhe.seconds)) workout_details FROM client_workout_history AS cwh JOIN client_workout_history_exercises AS cwhe ON cwhe.workouthistoryid = cwh.id JOIN exercises AS e ON e.id = cwhe.exerciseid JOIN training_session AS ts ON ts.id = cwh.sessionid JOIN client AS c ON c.id = cwh.clientid WHERE c.id = $1::int GROUP BY cwh.id, ts.id;";
 
   const params = [id];
 
@@ -348,7 +353,10 @@ function getSpecificClientWorkoutHistoryFromDb(id, callback) {
 
   console.log("Now getting workout sessions done by client " + id + " from the database")
   
-  var sql = "SELECT cwh.id AS client_workout_history_session_id, json_build_object('session_id', ts.id, 'session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'exercises_performed', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_sets', cwhe.sets, 'exercise_reps', cwhe.reps, 'exercise_weight', cwhe.weight, 'exercise_seconds', cwhe.seconds))) workout_details FROM client_workout_history AS cwh JOIN client_workout_history_exercises AS cwhe ON cwhe.workouthistoryid = cwh.id JOIN exercises AS e ON e.id = cwhe.exerciseid JOIN training_session AS ts ON ts.id = cwh.sessionid JOIN client AS c ON c.id = cwh.clientid WHERE cwh.id = $1::int GROUP BY cwh.id, ts.id;";
+  // Original
+  // var sql = "SELECT cwh.id AS client_workout_history_session_id, json_build_object('session_id', ts.id, 'session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'exercises_performed', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_sets', cwhe.sets, 'exercise_reps', cwhe.reps, 'exercise_weight', cwhe.weight, 'exercise_seconds', cwhe.seconds))) workout_details FROM client_workout_history AS cwh JOIN client_workout_history_exercises AS cwhe ON cwhe.workouthistoryid = cwh.id JOIN exercises AS e ON e.id = cwhe.exerciseid JOIN training_session AS ts ON ts.id = cwh.sessionid JOIN client AS c ON c.id = cwh.clientid WHERE cwh.id = $1::int GROUP BY cwh.id, ts.id;";
+
+  var sql = "SELECT cwh.id, ts.id, ts.sessionname, ts.sessiondescription, json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_sets', cwhe.sets, 'exercise_reps', cwhe.reps, 'exercise_weight', cwhe.weight, 'exercise_seconds', cwhe.seconds)) workout_details FROM client_workout_history AS cwh JOIN client_workout_history_exercises AS cwhe ON cwhe.workouthistoryid = cwh.id JOIN exercises AS e ON e.id = cwhe.exerciseid JOIN training_session AS ts ON ts.id = cwh.sessionid JOIN client AS c ON c.id = cwh.clientid WHERE cwh.id = $1::int GROUP BY cwh.id, ts.id;";
 
   const params = [id];
 

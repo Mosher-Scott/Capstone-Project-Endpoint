@@ -22,26 +22,26 @@ module.exports.handleGetTrainingSessiondata = function(request, response) {
     console.log(request.params);
 
   // Run the method to pull data from the database
-  getClientDataFromDb(sessionId, function(error, result) {
+  getTrainingSessionDataFromDb(sessionId, function(error, result) {
 
    // console.log(result);
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
-      response.json({success:false, data:error});
+      response.json({success:false, data:"Either an error or result was undefined"});
     }
 
     else if (result === null ) {
       console.log ("null result");
       response.statusCode = 404;
-      response.json({success:false, data:"Nothing"});
+      response.json({success:true, data:"No data found"});
     }
 
     // If query ran successfully but there was no results
     else if (result.length == 0) {
       console.log("No results returned");
       response.statusCode = 204;
-      response.end();
+      response.json({success:true, data:"No results found"});
     } 
 
     else {
@@ -50,7 +50,6 @@ module.exports.handleGetTrainingSessiondata = function(request, response) {
       const sessions = result;
 
       response.status(200);
-
       response.setHeader('Content-Type', 'application/json');
       response.json(sessions);
     }
@@ -61,8 +60,6 @@ module.exports.handleGetTrainingSessiondata = function(request, response) {
 module.exports.handleGetTrainingSessionExercises = function(request, response) {
     var sessionId = request.params.id;
 
-    console.log(request.params);
-
   // Run the method to pull data from the database
   getTrainingSessionExercisesFromDb(sessionId, function(error, result) {
 
@@ -70,31 +67,30 @@ module.exports.handleGetTrainingSessionExercises = function(request, response) {
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
-      response.json({success:false, data:error});
+      response.json({success:false, data:"Either an error or result was undefined"});
     }
 
     else if (result === null ) {
       console.log ("null result");
       response.statusCode = 404;
-      response.json({success:false, data:"Nothing"});
+      response.json({success:true, data:"Null result"});
     }
 
     // If query ran successfully but there was no results
     else if (result.length == 0) {
       console.log("No results returned");
       response.statusCode = 204;
-      response.end();
+      response.json({success:true, data:"No results returned"});
     } 
 
     else {
-      console.log("Training Sessions found");
+      console.log("Exercises found");
 
-      const sessions = result;
+      const exercises = result;
 
       response.status(200);
-
       response.setHeader('Content-Type', 'application/json');
-      response.json(sessions);
+      response.json(exercises);
     }
   }) // end of DataFromDb method
 }
@@ -109,20 +105,20 @@ module.exports.handleGetTrainingSessionNamesAndIds = function(request, response)
     if (error || result == "undefined") {
       console.log("Either an error or result was undefined");
       response.statusCode = 404;
-      response.json({success:false, data:error});
+      response.json({success:false, data:"Either an error or result was undefined"});
     }
 
     else if (result === null ) {
       console.log ("null result");
       response.statusCode = 404;
-      response.json({success:false, data:"Nothing"});
+      response.json({success:true, data:"Null results"});
     }
 
     // If query ran successfully but there was no results
     else if (result.length == 0) {
       console.log("No results returned");
       response.statusCode = 204;
-      response.end();
+      response.json({success:true, data:"Null results"});
     } 
 
     else {
@@ -131,7 +127,6 @@ module.exports.handleGetTrainingSessionNamesAndIds = function(request, response)
       const sessions = result;
 
       response.status(200);
-
       response.setHeader('Content-Type', 'application/json');
       response.json(sessions);
     }
@@ -143,7 +138,7 @@ module.exports.handleGetTrainingSessionNamesAndIds = function(request, response)
 
 /************** Database Query Methods ****************/
 //#region Database Methods
-function getClientDataFromDb(id, callback) {
+function getTrainingSessionDataFromDb(id, callback) {
     console.log("Now getting training sessions from the database")
 
     console.log(id);
@@ -152,7 +147,9 @@ function getClientDataFromDb(id, callback) {
   // Check the user id.  If it is null, then return all user information
   if (id == null) {
 
-        sql = "SELECT ts.id AS session_id, json_build_object('session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active, 'exercises', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_instructions', e.instruction))) session_details FROM training_session AS ts JOIN session_exercises AS se ON se.sessionid = ts.id JOIN exercises AS e on e.id = se.exerciseid GROUP BY ts.id ORDER BY ts.id ASC;";
+        // sql = "SELECT ts.id AS session_id, json_build_object('session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active, 'exercises', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_instructions', e.instruction))) session_details FROM training_session AS ts JOIN session_exercises AS se ON se.sessionid = ts.id JOIN exercises AS e on e.id = se.exerciseid GROUP BY ts.id ORDER BY ts.id ASC;";
+
+        sql = "SELECT ts.id AS session_id, ts.sessionname, ts.sessiondescription, ts.sessionSets, ts.sessionreps, ts.active, json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_instructions', e.instruction)) session_exercises FROM training_session AS ts JOIN session_exercises AS se ON se.sessionid = ts.id JOIN exercises AS e on e.id = se.exerciseid GROUP BY ts.id ORDER BY ts.id ASC;";
                 
         pool.query(sql, function(err, result) {
             
@@ -168,7 +165,7 @@ function getClientDataFromDb(id, callback) {
     }
 
     else {
-        sql = "SELECT ts.id AS session_id, json_build_object('session_name', ts.sessionname, 'session_description', ts.sessiondescription, 'session_sets', ts.sessionSets, 'session_reps', ts.sessionreps, 'session_active_flag',ts.active, 'exercises', json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_instructions', e.instruction))) session_details FROM training_session AS ts JOIN session_exercises AS se ON se.sessionid = ts.id JOIN exercises AS e on e.id = se.exerciseid WHERE ts.id = $1::int GROUP BY ts.id ORDER BY ts.id ASC;";
+        sql = "SELECT ts.id AS session_id, ts.sessionname, ts.sessiondescription, ts.sessionSets, ts.sessionreps, ts.active, json_agg(json_build_object('exercise_id', e.id, 'exercise_name', e.name, 'exercise_instructions', e.instruction)) session_exercises FROM training_session AS ts JOIN session_exercises AS se ON se.sessionid = ts.id JOIN exercises AS e on e.id = se.exerciseid WHERE ts.id = $1::int GROUP BY ts.id ORDER BY ts.id ASC;";
 
         const params = [id];
 
@@ -207,7 +204,7 @@ function getTrainingSessionExercisesFromDb(id, callback) {
 function getTrainingSessionExerciseNamesAndIdsFromDb(callback) {
   console.log("Now getting training session names and ids")
   
-  var sql = "SELECT ts.id AS training_session_id, json_agg(json_build_object('training_session_name', ts.sessionname)) session_info FROM training_session AS ts GROUP BY ts.id ORDER BY ts.id ASC;";
+  var sql = "SELECT ts.id AS training_session_id, ts.sessionname FROM training_session AS ts GROUP BY ts.id ORDER BY ts.id ASC;";
 
   pool.query(sql, function(err, result) {
   
