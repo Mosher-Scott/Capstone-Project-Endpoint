@@ -108,7 +108,7 @@ function getExerciseDataFromDb(id, callback){
   
     // Check the exercise id.  If it is null, then return all user information
     if (id == null) {
-      sql = "SELECT e.id AS exercise_id, e.name, mg.name AS muscle_group, e.instruction, e.active FROM exercises AS e JOIN muscle_group AS mg ON mg.id = e.musclegroup ORDER BY e.id ASC;";
+      sql = "SELECT e.id AS exercise_id, e.name, mg.id AS muscle_group_id, mg.name AS muscle_group_name, e.instruction, e.active FROM exercises AS e JOIN muscle_group AS mg ON mg.id = e.musclegroup ORDER BY e.id ASC;";
   
       pool.query(sql, function(err, result) {
       
